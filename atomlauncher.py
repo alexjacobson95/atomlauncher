@@ -3,7 +3,7 @@
 import wx
 import win32con
 
-TRAY_TOOLTIP = 'System Tray Demo'
+TRAY_TOOLTIP = 'Atom Launcher'
 TRAY_ICON = 'atom.png'
 
 def create_menu_item(menu, label, func):
@@ -15,23 +15,39 @@ def create_menu_item(menu, label, func):
 def toggleWindow():
 		mainWindow.Show(not mainWindow.IsShown())
 
+def quit():
+	mainWindow.Destroy()
+	icon.Destroy()
+
+
 class Window(wx.Frame):
 	def __init__(self, parent, id, title):
 		wx.Frame.__init__(self, parent, id, title, size=wx.Size(450, 200), style=wx.NO_BORDER)
 		self.SetBackgroundColour("red")
 		self.Centre()
 
+		#Hotkey Setup
 		self.regHotKey()
-		self.Bind(wx.EVT_HOTKEY, self.handleHotKey, id=self.hotKeyId)
+		self.Bind(wx.EVT_HOTKEY, self.handleAltEnter, id=self.hotKeyIDs[0])
+		self.Bind(wx.EVT_HOTKEY, self.handleAltQ, id=self.hotKeyIDs[1])
+
+		#main textbox
+		self.control = wx.TextCtrl(self, -1, 'enter a command', size=wx.Size(200, 20), style=wx.TE_PROCESS_TAB)
+		self.control.Centre()
 
 	def regHotKey(self):
-		self.hotKeyId = 100
-		self.RegisterHotKey(self.hotKeyId, win32con.MOD_ALT, win32con.VK_RETURN)
+		self.hotKeyIDs = [ 100, 101 ]
+		self.RegisterHotKey(self.hotKeyIDs[0], win32con.MOD_ALT, win32con.VK_RETURN)
+		self.RegisterHotKey(self.hotKeyIDs[1], win32con.MOD_ALT, 81) #81 should be q...I think?
 
-	def handleHotKey(self, event):
+	def handleAltEnter(self, event):
 		toggleWindow()
 
-		if mainWindow.IsShown():
+		#if mainWindow.IsShown():
+
+	def handleAltQ(self, event):
+		quit()
+
 			
 
 
@@ -61,23 +77,9 @@ class TaskBarIcon(wx.TaskBarIcon):
 		toggleWindow()
 
 	def on_exit(self, event):
-		mainWindow.Destroy()
-		wx.CallAfter(self.Destroy)
+		quit()
 
 app = wx.App(False)
 mainWindow = Window(None, -1, "Atom Launcher")
-TaskBarIcon()
+icon = TaskBarIcon()
 app.MainLoop()
-
-
-#class GUI(wx.Frame):
-#	def __init__(self, parent, id, title):
-#		wx.Frame.__init__(self, parent, id, title,  size=wx.Size(450, 200), style=wx.NO_BORDER)
-#		self.SetBackgroundColour("orange")
-#		self.Centre()
-
-
-#app = wx.Ap(False)
-#frame = GUI(None, -1, "Atom Launcher")
-#frame.Show(True)
-#app.MainLoop()
