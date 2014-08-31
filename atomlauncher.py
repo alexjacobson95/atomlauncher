@@ -1,6 +1,7 @@
 #win32con comes from: http://sourceforge.net/projects/pywin32/files/pywin32/
 
 import wx
+import wx.stc as stc
 import win32con
 
 TRAY_TOOLTIP = 'Atom Launcher'
@@ -19,24 +20,48 @@ def quit():
 	mainWindow.Destroy()
 	icon.Destroy()
 
+class CommandBox(stc.StyledTextCtrl):
+	def __init__(self, parent, style):
+		stc.StyledTextCtrl.__init__(self, parent, style=style)
+
 
 class Window(wx.Frame):
 	def __init__(self, parent, id, title):
-		wx.Frame.__init__(self, parent, id, title, size=wx.Size(450, 200), style=wx.NO_BORDER)
-		self.SetBackgroundColour("red")
-		self.Centre()
+		wx.Frame.__init__(self, parent, id, title, size=(450, 200), style=wx.NO_BORDER)
 
 		#Hotkey Setup
+		self.hotKeyIDs = [ 100, 101 ]
 		self.regHotKey()
 		self.Bind(wx.EVT_HOTKEY, self.handleAltEnter, id=self.hotKeyIDs[0])
 		self.Bind(wx.EVT_HOTKEY, self.handleAltQ, id=self.hotKeyIDs[1])
 
-		#main textbox
-		self.control = wx.TextCtrl(self, -1, 'enter a command', size=wx.Size(200, 20), style=wx.TE_PROCESS_TAB)
-		self.control.Centre()
+		#sizers
+		self.hbox = wx.BoxSizer(wx.HORIZONTAL)
+		self.panel1 = wx.Panel(self, -1, style=wx.BORDER_NONE)
+		self.panel2 = wx.Panel(self, -1, style=wx.BORDER_NONE)
+		self.panel3 = wx.Panel(self, -1, style=wx.BORDER_NONE)
+
+		self.hbox.Add(self.panel1, -1, wx.EXPAND)
+		self.hbox.Add(self.panel2, -1, wx.EXPAND)
+		self.hbox.Add(self.panel3, -1, wx.EXPAND)
+
+		self.titleText = wx.StaticText(self.panel1, 0, 'Atom Launcher', size=(100,50), style=wx.ALIGN_CENTRE)
+
+		self.commandBox = wx.TextCtrl(self.panel2, 1, '', size=(200, 20), style=wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB)
+	
+		self.textBox = wx.TextCtrl(self.panel3, 2, 'Test', size=(200, 40))
+
+		self.SetSizer(self.hbox)
+
+
+		self.SetBackgroundColour("white")
+		self.Centre()
+		#CommandBox(self, wx.SIMPLE_BORDER)
+
+
+		#self.control.Bind(wx.EVT_TEXT_ENTER, self.handleEnter)
 
 	def regHotKey(self):
-		self.hotKeyIDs = [ 100, 101 ]
 		self.RegisterHotKey(self.hotKeyIDs[0], win32con.MOD_ALT, win32con.VK_RETURN)
 		self.RegisterHotKey(self.hotKeyIDs[1], win32con.MOD_ALT, 81) #81 should be q...I think?
 
@@ -47,6 +72,9 @@ class Window(wx.Frame):
 
 	def handleAltQ(self, event):
 		quit()
+
+	def handleEnter(self, event):
+		self.commandBox.GetText()
 
 			
 
