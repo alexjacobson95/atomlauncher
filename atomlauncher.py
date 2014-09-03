@@ -36,26 +36,24 @@ class Window(wx.Frame):
 		self.Bind(wx.EVT_HOTKEY, self.handleAltQ, id=self.hotKeyIDs[1])
 
 		#sizers
-		self.hbox = wx.BoxSizer(wx.HORIZONTAL)
-		self.panel1 = wx.Panel(self, -1, style=wx.BORDER_NONE)
-		self.panel2 = wx.Panel(self, -1, style=wx.BORDER_NONE)
-		self.panel3 = wx.Panel(self, -1, style=wx.BORDER_NONE)
+		self.vbox = wx.BoxSizer(wx.VERTICAL)
 
-		self.hbox.Add(self.panel1, -1, wx.EXPAND)
-		self.hbox.Add(self.panel2, -1, wx.EXPAND)
-		self.hbox.Add(self.panel3, -1, wx.EXPAND)
+		self.titleText = wx.StaticText(self, 0, 'Atom Launcher', style=wx.ALIGN_CENTRE)
+		self.commandBox = wx.TextCtrl(self, 1, '', size=(450, 20), style=wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB)
+		self.textBox = wx.TextCtrl(self, 2, 'Test', size=(450, 40))
+		self.titleFont = wx.Font(24, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
+		self.titleText.SetFont(self.titleFont)
 
-		self.titleText = wx.StaticText(self.panel1, 0, 'Atom Launcher', size=(100,50), style=wx.ALIGN_CENTRE)
+		self.vbox.Add(self.titleText, flag=wx.ALIGN_CENTER)
+		self.vbox.Add(self.commandBox, flag=wx.ALIGN_CENTER)
+		self.vbox.Add(self.textBox, flag=wx.ALIGN_CENTER)
 
-		self.commandBox = wx.TextCtrl(self.panel2, 1, '', size=(200, 20), style=wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB)
-	
-		self.textBox = wx.TextCtrl(self.panel3, 2, 'Test', size=(200, 40))
-
-		self.SetSizer(self.hbox)
+		self.SetSizer(self.vbox)
+		self.Layout()
 
 
-		self.SetBackgroundColour("white")
-		self.Centre()
+		self.SetBackgroundColour("")
+		self.Center()
 		#CommandBox(self, wx.SIMPLE_BORDER)
 
 
