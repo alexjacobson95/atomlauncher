@@ -1,7 +1,7 @@
 #win32con comes from: http://sourceforge.net/projects/pywin32/files/pywin32/
 
 import wx
-import wx.stc as stc
+import wx.html
 import win32con
 
 TRAY_TOOLTIP = 'Atom Launcher'
@@ -20,9 +20,22 @@ def quit():
 	mainWindow.Destroy()
 	icon.Destroy()
 
-class CommandBox(stc.StyledTextCtrl):
-	def __init__(self, parent, style):
-		stc.StyledTextCtrl.__init__(self, parent, style=style)
+class suggestionBox(wx.html.HtmlWindow):
+	def __init__(self, parent, size, pos, style=None):
+		self.html = wx.html.HtmlWindow(parent, 2, pos=pos, size=size, style=style)
+		self.html.SetRelatedFrame(parent, "HTML : %%s")
+
+		self.html.SetBorders(0)
+		self.html.SetPage("test")
+
+	def addSuggestion(self, frontSuggest, backSuggest):
+		print 'suggestion'
+
+	def clearSuggestions(self):
+		print 'clear'
+
+	def addTest(self, text):
+		print 'test'
 
 
 class Window(wx.Frame):
@@ -31,37 +44,38 @@ class Window(wx.Frame):
 
 		#Hotkey Setup
 		self.hotKeyIDs = [ 100, 101 ]
-		self.regHotKey()
+		self.RegisterHotKey(self.hotKeyIDs[0], win32con.MOD_ALT, win32con.VK_RETURN)
+		self.RegisterHotKey(self.hotKeyIDs[1], win32con.MOD_ALT, 81) #81 should be q...I think?
+
 		self.Bind(wx.EVT_HOTKEY, self.handleAltEnter, id=self.hotKeyIDs[0])
 		self.Bind(wx.EVT_HOTKEY, self.handleAltQ, id=self.hotKeyIDs[1])
 
-		#sizers
-		self.vbox = wx.BoxSizer(wx.VERTICAL)
+		#bind window change
+		self.Bind(wx.EVT_ACTIVATE, self.handleLostFocus, id=200)
 
+		#window contents
 		self.titleText = wx.StaticText(self, 0, 'Atom Launcher', style=wx.ALIGN_CENTRE)
-		self.commandBox = wx.TextCtrl(self, 1, '', size=(450, 20), style=wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB)
-		self.textBox = wx.TextCtrl(self, 2, 'Test', size=(450, 40))
 		self.titleFont = wx.Font(24, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
 		self.titleText.SetFont(self.titleFont)
 
+		self.commandBox = wx.TextCtrl(self, 1, '', size=(450, 20), style=wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB)
+
+		self.suggestionBox = suggestionBox(self, pos=(0, 60), size=(450, 140), style=wx.html.HW_SCROLLBAR_NEVER)
+		
+		#bind textevents
+		self.commandBox.Bind(wx.EVT_KEY_DOWN, self.onKeyDown)
+		self.commandBox.Bind(wx.EVT_KEY_UP, self.onKeyUp)
+
+		#sizers1
+		self.vbox = wx.BoxSizer(wx.VERTICAL)
+
 		self.vbox.Add(self.titleText, flag=wx.ALIGN_CENTER)
 		self.vbox.Add(self.commandBox, flag=wx.ALIGN_CENTER)
-		self.vbox.Add(self.textBox, flag=wx.ALIGN_CENTER)
 
 		self.SetSizer(self.vbox)
 		self.Layout()
 
-
-		self.SetBackgroundColour("")
 		self.Center()
-		#CommandBox(self, wx.SIMPLE_BORDER)
-
-
-		#self.control.Bind(wx.EVT_TEXT_ENTER, self.handleEnter)
-
-	def regHotKey(self):
-		self.RegisterHotKey(self.hotKeyIDs[0], win32con.MOD_ALT, win32con.VK_RETURN)
-		self.RegisterHotKey(self.hotKeyIDs[1], win32con.MOD_ALT, 81) #81 should be q...I think?
 
 	def handleAltEnter(self, event):
 		toggleWindow()
@@ -71,8 +85,30 @@ class Window(wx.Frame):
 	def handleAltQ(self, event):
 		quit()
 
-	def handleEnter(self, event):
-		self.commandBox.GetText()
+	def handleLostFocus(self, event):
+		print 'handled'
+
+	def onKeyDown(self, e):
+		code = e.GetKeyCode()
+
+		if code == wx.WXK_UP:
+			print("Up")
+		elif code == wx.WXK_DOWN:
+			print("Down")
+		elif code == wx.WXK_RIGHT:
+			print("Right")
+		elif code == wx.WXK_LEFT:
+			print("Left")
+
+		e.Skip()
+
+	def onKeyUp(self, e):
+		code = e.GetKeyCode()
+		
+		if code == wx.WXK_RETURN:
+			print("Return")
+		
+		e.Skip()
 
 			
 
@@ -80,29 +116,28 @@ class Window(wx.Frame):
 class TaskBarIcon(wx.TaskBarIcon):
 	def __init__(self):
 		super(TaskBarIcon, self).__init__()
-		self.set_icon(TRAY_ICON)
-		self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.on_left_down)
+		
+		icon = wx.IconFromBitmap(wx.Bitmap(TRAY_ICON))
+		self.SetIcon(icon, TRAY_TOOLTIP)
+		
+		self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.onLeftDown)
 
 		toggleWindow()
 
 	def CreatePopupMenu(self):
 		menu = wx.Menu()
-		create_menu_item(menu, 'Say Hello', self.on_hello)
+		create_menu_item(menu, 'Say Hello', self.onHello)
 		menu.AppendSeparator()
-		create_menu_item(menu, 'Exit', self.on_exit)
+		create_menu_item(menu, 'Exit', self.onExit)
 		return menu
 
-	def set_icon(self, path):
-		icon = wx.IconFromBitmap(wx.Bitmap(path))
-		self.SetIcon(icon, TRAY_TOOLTIP)
-
-	def on_left_down(self, event):
+	def onLeftDown(self, event):
 		toggleWindow()
 
-	def on_hello(self, event):
+	def onHello(self, event):
 		toggleWindow()
 
-	def on_exit(self, event):
+	def onExit(self, event):
 		quit()
 
 app = wx.App(False)
