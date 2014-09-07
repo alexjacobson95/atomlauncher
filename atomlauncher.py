@@ -26,16 +26,41 @@ class suggestionBox(wx.html.HtmlWindow):
 		self.html.SetRelatedFrame(parent, "HTML : %%s")
 
 		self.html.SetBorders(0)
-		self.html.SetPage("test")
+		self.html.SetPage('test')
 
-	def addSuggestion(self, frontSuggest, backSuggest):
-		print 'suggestion'
+		self.suggestions = []
+		self.htmlCode = ''
+		self.defaultCommands = [ 
+			{'value': 'Google:', 'type': 'Google Search', 'search': ''},
+			{'value': 'Run:',    'type': 'Run',           'run': ''},
+			{'value': 'Find:',   'type': 'Find',          'find': ''}
+		]
+		#self.suggestion = {'value': 'Google:', 'type': 'Google Search', 'search': ''}
+
+
+	def addSuggestion(self, suggestion):
+		self.suggestions.append(suggestion)
+
+		self.updateHtml()
 
 	def clearSuggestions(self):
-		print 'clear'
+		self.suggestions = []
+		self.updateHtml()
 
-	def addTest(self, text):
-		print 'test'
+	def defaultSuggestions(self):
+		self.clearSuggestions()
+		self.suggestions.extend(self.defaultCommands)
+		self.updateHtml()
+
+	def updateHtml(self):
+		self.htmlCode = '<ul>'
+		for item in self.suggestions:
+			self.htmlCode += '<li>' + item['value'] + '</li>'
+
+		self.htmlCode += '</ul>'
+
+		self.html.SetPage(self.htmlCode)
+
 
 
 class Window(wx.Frame):
@@ -88,8 +113,8 @@ class Window(wx.Frame):
 	def handleLostFocus(self, event):
 		print 'handled'
 
-	def onKeyDown(self, e):
-		code = e.GetKeyCode()
+	def onKeyDown(self, event):
+		code = event.GetKeyCode()
 
 		if code == wx.WXK_UP:
 			print("Up")
@@ -100,15 +125,30 @@ class Window(wx.Frame):
 		elif code == wx.WXK_LEFT:
 			print("Left")
 
-		e.Skip()
+		event.Skip()
 
-	def onKeyUp(self, e):
-		code = e.GetKeyCode()
+	def onKeyUp(self, event):
+		code = event.GetKeyCode()
 		
 		if code == wx.WXK_RETURN:
 			print("Return")
+
+		#elif code == wx.WXK_BACK:     
+		#	print("Backspace")
+
+		#elif code == wx.WXK_DELETE:
+		#	print("Delete")
+
+		else:
+			val = self.commandBox.GetValue()
+			print val
+
+			if val == '' or val == ' ':
+				self.suggestionBox.defaultSuggestions()
+			else:
+				self.suggestionBox.clearSuggestions()
 		
-		e.Skip()
+		event.Skip()
 
 			
 
@@ -144,3 +184,5 @@ app = wx.App(False)
 mainWindow = Window(None, -1, "Atom Launcher")
 icon = TaskBarIcon()
 app.MainLoop()
+
+
