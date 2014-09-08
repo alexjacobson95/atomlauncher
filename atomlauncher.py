@@ -3,6 +3,7 @@
 import wx
 import wx.html
 import win32con
+import indexer
 
 TRAY_TOOLTIP = 'Atom Launcher'
 TRAY_ICON = 'atom.png'
@@ -26,7 +27,6 @@ class suggestionBox(wx.html.HtmlWindow):
 		self.html.SetRelatedFrame(parent, "HTML : %%s")
 
 		self.html.SetBorders(0)
-		self.html.SetPage('test')
 
 		self.suggestions = []
 		self.htmlCode = ''
@@ -40,7 +40,6 @@ class suggestionBox(wx.html.HtmlWindow):
 
 	def addSuggestion(self, suggestion):
 		self.suggestions.append(suggestion)
-
 		self.updateHtml()
 
 	def clearSuggestions(self):
