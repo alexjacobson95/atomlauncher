@@ -28,3 +28,6 @@ class indexer():
 ind = indexer()
 ind.addDocument()
 ind.searchDocuments()
+
+
+print settings.settingsDict

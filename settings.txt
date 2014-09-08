@@ -1,2 +1,2 @@
-launchShortCut: alt-enter
-quitShortCut: alt-Q
+launchShortCut alt-enter
+quitShortCut alt-Q
