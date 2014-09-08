@@ -2,17 +2,21 @@ import os
 
 SETTINGS_FILE = 'settings.txt'
 DEFAULT_SETTINGS = """\
-launchShortCut alt-enter
-quitShortCut alt-Q
+trayToolTip AtomLauncher
+trayIcon atom.png
+launchHotKey alt-enter
+quitHotKey alt-Q
 """
+print 
 
-settingsDict = {}
+settings = {}
 
 def readSettingsFile():
 	if not os.path.isfile(SETTINGS_FILE):
 		with open(SETTINGS_FILE, 'w') as settingsFile:
 			settingsFile.write(DEFAULT_SETTINGS)
 
+		print 'Settings File Created'
 		readSettingsFile()
 
 	else:
@@ -24,7 +28,7 @@ def readSettingsFile():
 
 				for c in line:
 					if c == '\n':
-						settingsDict[typeBuffer] = setBuffer
+						settings[typeBuffer] = setBuffer
 						typeBuffer = ''
 						setBuffer = ''
 						setSetting = False
@@ -38,5 +42,6 @@ def readSettingsFile():
 							else:
 								setBuffer += c
 
-readSettingsFile()
-print settingsDict
+def checkSettingsFile():
+	print 'test'
+

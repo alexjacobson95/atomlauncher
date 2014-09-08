@@ -3,6 +3,7 @@
 import wx
 import wx.html
 import win32con
+import settings as s
 import indexer
 
 TRAY_TOOLTIP = 'Atom Launcher'
@@ -60,19 +61,42 @@ class suggestionBox(wx.html.HtmlWindow):
 
 		self.html.SetPage(self.htmlCode)
 
+class TaskBarIcon(wx.TaskBarIcon):
+	def __init__(self):
+		super(TaskBarIcon, self).__init__()
+		
+		icon = wx.IconFromBitmap(wx.Bitmap(s.settings['trayicon']))
+		self.SetIcon(icon, s.settings['trayToolTip'])
+		
+		self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.onLeftDown)
 
+		toggleWindow()
+
+	def CreatePopupMenu(self):
+		menu = wx.Menu()
+		create_menu_item(menu, 'Say Hello', self.onHello)
+		menu.AppendSeparator()
+		create_menu_item(menu, 'Exit', self.onExit)
+		return menu
+
+	def onLeftDown(self, event):
+		toggleWindow()
+
+	def onHello(self, event):
+		toggleWindow()
+
+	def onExit(self, event):
+		quit()
 
 class Window(wx.Frame):
 	def __init__(self, parent, id, title):
 		wx.Frame.__init__(self, parent, id, title, size=(450, 200), style=wx.NO_BORDER)
 
-		#Hotkey Setup
-		self.hotKeyIDs = [ 100, 101 ]
-		self.RegisterHotKey(self.hotKeyIDs[0], win32con.MOD_ALT, win32con.VK_RETURN)
-		self.RegisterHotKey(self.hotKeyIDs[1], win32con.MOD_ALT, 81) #81 should be q...I think?
+		#load settings
+		s.readSettingsFile()
 
-		self.Bind(wx.EVT_HOTKEY, self.handleAltEnter, id=self.hotKeyIDs[0])
-		self.Bind(wx.EVT_HOTKEY, self.handleAltQ, id=self.hotKeyIDs[1])
+		#Hotkey Setup
+		self.registerHotKeys()
 
 		#bind window change
 		self.Bind(wx.EVT_ACTIVATE, self.handleLostFocus, id=200)
@@ -100,6 +124,41 @@ class Window(wx.Frame):
 		self.Layout()
 
 		self.Center()
+
+	def registerHotKeys(self):
+		launchHotKey = self.convertHotKeySettings(s.settings['launchHotKey'])
+		quitHotkey = self.convertHotKeySettings(s.settings['quitHotkey'])
+
+		self.hotKeyIDs = [ 100, 101 ]
+		self.RegisterHotKey(self.hotKeyIDs[0], win32con.MOD_ALT, win32con.VK_RETURN)
+		self.RegisterHotKey(self.hotKeyIDs[1], win32con.MOD_ALT, 81) #81 should be q...I think?
+
+		self.Bind(wx.EVT_HOTKEY, self.handleAltEnter, id=self.hotKeyIDs[0])
+		self.Bind(wx.EVT_HOTKEY, self.handleAltQ, id=self.hotKeyIDs[1])
+
+	def convertHotKeySettings(self, setting):
+		hotkey = setting.split('-')
+
+		if hotkey[0] == 'ctrl':
+			hotkey[0] = win32con.MOD_CTRL
+
+		elif hotkey[0] == 'alt':
+			hotkey[0] = win32con.MOD_ALT
+
+		elif hotkey[0] == 'shift':
+			hotkey[0] = win32con.MOD_SHIFT
+
+		else:
+			print 'ERROR: Couldn\'t set hotkey ' + setting
+			return None
+
+		if hotkey[1] == 'enter':
+			hotkey[1] = win32con.VK_RETURN
+		elif isalpha(hotkey[1]) or isdigit(hotkey[1]):
+			
+
+
+		return hotkey
 
 	def handleAltEnter(self, event):
 		toggleWindow()
@@ -148,36 +207,6 @@ class Window(wx.Frame):
 				self.suggestionBox.clearSuggestions()
 		
 		event.Skip()
-
-			
-
-
-class TaskBarIcon(wx.TaskBarIcon):
-	def __init__(self):
-		super(TaskBarIcon, self).__init__()
-		
-		icon = wx.IconFromBitmap(wx.Bitmap(TRAY_ICON))
-		self.SetIcon(icon, TRAY_TOOLTIP)
-		
-		self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.onLeftDown)
-
-		toggleWindow()
-
-	def CreatePopupMenu(self):
-		menu = wx.Menu()
-		create_menu_item(menu, 'Say Hello', self.onHello)
-		menu.AppendSeparator()
-		create_menu_item(menu, 'Exit', self.onExit)
-		return menu
-
-	def onLeftDown(self, event):
-		toggleWindow()
-
-	def onHello(self, event):
-		toggleWindow()
-
-	def onExit(self, event):
-		quit()
 
 app = wx.App(False)
 mainWindow = Window(None, -1, "Atom Launcher")

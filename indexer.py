@@ -1,7 +1,6 @@
 from whoosh.index import create_in 
 from whoosh.fields import *
 from whoosh.qparser import QueryParser
-import settings
 import os
 
 class indexer():
@@ -23,11 +22,3 @@ class indexer():
 			query = QueryParser('content', self.ix.schema).parse('first')
 			results = searcher.search(query)
 			print results[0]
-
-
-ind = indexer()
-ind.addDocument()
-ind.searchDocuments()
-
-
-print settings.settingsDict
