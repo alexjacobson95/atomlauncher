@@ -7,7 +7,6 @@ trayIcon atom.png
 launchHotKey alt-enter
 quitHotKey alt-Q
 """
-print 
 
 settings = {}
 
@@ -27,21 +26,24 @@ def readSettingsFile():
 				setSetting = False
 
 				for c in line:
-					if c == '\n':
-						settings[typeBuffer] = setBuffer
-						typeBuffer = ''
-						setBuffer = ''
-						setSetting = False
+					if not(typeBuffer == '' and c == '\n'):
+						if c == '\n':
+							settings[typeBuffer] = setBuffer
+							typeBuffer = ''
+							setBuffer = ''
+							setSetting = False
 
-					else:
-						if  c == ' ':
-							setSetting = True
 						else:
-							if not setSetting:
-								typeBuffer += c
+							if  c == ' ':
+								setSetting = True
 							else:
-								setBuffer += c
+								if not setSetting:
+									typeBuffer += c
+								else:
+									setBuffer += c
 
 def checkSettingsFile():
 	print 'test'
 
+#readSettingsFile()
+#print settings

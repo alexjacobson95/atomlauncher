@@ -1,2 +1,4 @@
-launchShortCut alt-enter
-quitShortCut alt-Q
+trayToolTip AtomLauncher
+trayIcon atom.png
+launchHotKey alt-enter
+quitHotKey alt-Q

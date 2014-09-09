@@ -1,4 +1,6 @@
+#wx
 #win32con comes from: http://sourceforge.net/projects/pywin32/files/pywin32/
+#whoosh
 
 import wx
 import wx.html
@@ -65,7 +67,7 @@ class TaskBarIcon(wx.TaskBarIcon):
 	def __init__(self):
 		super(TaskBarIcon, self).__init__()
 		
-		icon = wx.IconFromBitmap(wx.Bitmap(s.settings['trayicon']))
+		icon = wx.IconFromBitmap(wx.Bitmap(s.settings['trayIcon']))
 		self.SetIcon(icon, s.settings['trayToolTip'])
 		
 		self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.onLeftDown)
@@ -127,14 +129,14 @@ class Window(wx.Frame):
 
 	def registerHotKeys(self):
 		launchHotKey = self.convertHotKeySettings(s.settings['launchHotKey'])
-		quitHotkey = self.convertHotKeySettings(s.settings['quitHotkey'])
+		quitHotKey = self.convertHotKeySettings(s.settings['quitHotKey'])
 
-		self.hotKeyIDs = [ 100, 101 ]
-		self.RegisterHotKey(self.hotKeyIDs[0], win32con.MOD_ALT, win32con.VK_RETURN)
-		self.RegisterHotKey(self.hotKeyIDs[1], win32con.MOD_ALT, 81) #81 should be q...I think?
+		hotKeyIDs = [ 100, 101 ]
+		self.RegisterHotKey(hotKeyIDs[0], launchHotKey[0], launchHotKey[1])
+		self.RegisterHotKey(hotKeyIDs[1], quitHotKey[0], quitHotKey[1]) #81 should be q...I think?
 
-		self.Bind(wx.EVT_HOTKEY, self.handleAltEnter, id=self.hotKeyIDs[0])
-		self.Bind(wx.EVT_HOTKEY, self.handleAltQ, id=self.hotKeyIDs[1])
+		self.Bind(wx.EVT_HOTKEY, self.handleLaunchKey, id=hotKeyIDs[0])
+		self.Bind(wx.EVT_HOTKEY, self.handleQuitKey, id=hotKeyIDs[1])
 
 	def convertHotKeySettings(self, setting):
 		hotkey = setting.split('-')
@@ -154,18 +156,22 @@ class Window(wx.Frame):
 
 		if hotkey[1] == 'enter':
 			hotkey[1] = win32con.VK_RETURN
-		elif isalpha(hotkey[1]) or isdigit(hotkey[1]):
-			
-
+		#elif isalpha(hotkey[1]) or isdigit(hotkey[1]):
+			#figure this out when i have internet
+		#	hotkey[1] = 81
+		else:
+			#print 'ERROR: Couldn\'t set hotkey ' + setting
+			#return None
+			hotkey[1] = 81
 
 		return hotkey
 
-	def handleAltEnter(self, event):
+	def handleLaunchKey(self, event):
 		toggleWindow()
 
 		#if mainWindow.IsShown():
 
-	def handleAltQ(self, event):
+	def handleQuitKey(self, event):
 		quit()
 
 	def handleLostFocus(self, event):
@@ -199,7 +205,6 @@ class Window(wx.Frame):
 
 		else:
 			val = self.commandBox.GetValue()
-			print val
 
 			if val == '' or val == ' ':
 				self.suggestionBox.defaultSuggestions()
