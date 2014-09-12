@@ -10,37 +10,46 @@ os.environ['programdata'] + "\\Microsoft\\Windows\\Start Menu\\Programs\\"
 
 class indexer():
 	def __init__(self, indexFolder='indexDir'):
-		self.schema = Schema(title=TEXT(stored=True), path=ID(stored=True), content=TEXT)
-		
 		if not os.path.isdir(indexFolder):
 			os.mkdir(indexFolder)
 
-		self.ix = create_in(indexFolder, self.schema)
+		self.cleanIndex(indexFolder, INDEX_PATH)
+
+	def getSchema(self):
+		return Schema(name=TEXT(stored=True), path=ID(unique=True, stored=True), time=STORED)
+
+	def cleanIndex(self, indexFolder, paths):
+		self.ix = create_in(indexFolder, schema=self.getSchema())
 		self.writer = self.ix.writer()
 
-	def addDocument(self):
-		self.writer.add_document(title=u'First Document', path=u'/a', content=u'This is the first document added!')
+		self.addDocuments(paths)
 		self.writer.commit()
 
 	def searchDocuments(self):
 		with self.ix.searcher() as searcher:
-			query = QueryParser('content', self.ix.schema).parse('first')
+			query = QueryParser('name', self.ix.schema).parse(u'*notepad*')
 			results = searcher.search(query)
-			print results[0]
+			if len(results) > 0:
+				for result in results:
+					print result
+			else:
+				print "no results"
 
-def testExplode():
-	paths = INDEX_PATH.split(';')
-	for dirPath, dirNames, fileNames in os.walk(paths[0]):
-		for fileName in fileNames:
-			if fileName.split('.')[-1] == 'lnk':
-				fullPath = os.path.join(dirPath, fileName)
-				targetPath = Dispatch('WScript.Shell').CreateShortCut(fullPath).Targetpath
-				
-				if targetPath.split('.')[-1] == 'exe':
-					print fullPath + "\n" + targetPath
+	def addDocuments(self, paths):
+		paths = paths.split(';')
+		for path in paths:
+			for dirPath, dirNames, fileNames in os.walk(path):
+				for fileName in fileNames:
+					if fileName.split('.')[-1] == 'lnk':
+						fullPath = os.path.join(dirPath, fileName)
+						targetPath = Dispatch('WScript.Shell').CreateShortCut(fullPath).Targetpath
+						
+						if targetPath.split('.')[-1] == 'exe':
+							#add document to index
+							fileName = fileName.split('.')[0]
+							modTime = os.path.getmtime(fullPath)
 
+							self.writer.add_document(name=unicode(fileName), path=unicode(targetPath), time=modTime)
 
-
-
-print INDEX_PATH
-testExplode()
+dex = indexer()
+dex.searchDocuments()
