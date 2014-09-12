@@ -33,10 +33,10 @@ def testExplode():
 	for dirPath, dirNames, fileNames in os.walk(paths[0]):
 		for fileName in fileNames:
 			if fileName.split('.')[-1] == 'lnk':
+				fullPath = os.path.join(dirPath, fileName)
 				targetPath = Dispatch('WScript.Shell').CreateShortCut(fullPath).Targetpath
 				
 				if targetPath.split('.')[-1] == 'exe':
-					fullPath = os.path.join(dirPath, fileName)
 					print fullPath + "\n" + targetPath
 
 
