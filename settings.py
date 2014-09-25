@@ -8,9 +8,9 @@ launchHotKey alt-enter
 quitHotKey alt-Q
 """
 
-settings = {}
-
 def readSettingsFile():
+	settings = {}
+
 	if not os.path.isfile(SETTINGS_FILE):
 		with open(SETTINGS_FILE, 'w') as settingsFile:
 			settingsFile.write(DEFAULT_SETTINGS)
@@ -41,6 +41,8 @@ def readSettingsFile():
 									typeBuffer += c
 								else:
 									setBuffer += c
+
+	return settings
 
 def checkSettingsFile():
 	print 'test'

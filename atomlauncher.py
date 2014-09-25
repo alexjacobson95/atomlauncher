@@ -11,6 +11,8 @@ import indexer
 TRAY_TOOLTIP = 'Atom Launcher'
 TRAY_ICON = 'atom.png'
 
+settings = s.readSettingsFile()
+
 def create_menu_item(menu, label, func):
 	item = wx.MenuItem(menu, -1, label)
 	menu.Bind(wx.EVT_MENU, func, id=item.GetId())
@@ -45,6 +47,10 @@ class suggestionBox(wx.html.HtmlWindow):
 		self.suggestions.append(suggestion)
 		self.updateHtml()
 
+	def addSuggestions(self, suggestions):
+		#fix this
+		print suggestions
+
 	def clearSuggestions(self):
 		self.suggestions = []
 		self.updateHtml()
@@ -67,8 +73,8 @@ class TaskBarIcon(wx.TaskBarIcon):
 	def __init__(self):
 		super(TaskBarIcon, self).__init__()
 		
-		icon = wx.IconFromBitmap(wx.Bitmap(s.settings['trayIcon']))
-		self.SetIcon(icon, s.settings['trayToolTip'])
+		icon = wx.IconFromBitmap(wx.Bitmap(settings['trayIcon']))
+		self.SetIcon(icon, settings['trayToolTip'])
 		
 		self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.onLeftDown)
 
@@ -94,8 +100,8 @@ class Window(wx.Frame):
 	def __init__(self, parent, id, title):
 		wx.Frame.__init__(self, parent, id, title, size=(450, 200), style=wx.NO_BORDER)
 
-		#load settings
-		s.readSettingsFile()
+		#load indexer
+		self.dex = indexer.indexer()
 
 		#Hotkey Setup
 		self.registerHotKeys()
@@ -128,8 +134,8 @@ class Window(wx.Frame):
 		self.Center()
 
 	def registerHotKeys(self):
-		launchHotKey = self.convertHotKeySettings(s.settings['launchHotKey'])
-		quitHotKey = self.convertHotKeySettings(s.settings['quitHotKey'])
+		launchHotKey = self.convertHotKeySettings(settings['launchHotKey'])
+		quitHotKey = self.convertHotKeySettings(settings['quitHotKey'])
 
 		hotKeyIDs = [ 100, 101 ]
 		self.RegisterHotKey(hotKeyIDs[0], launchHotKey[0], launchHotKey[1])
@@ -207,15 +213,21 @@ class Window(wx.Frame):
 			val = self.commandBox.GetValue()
 
 			if val == '' or val == ' ':
-				self.suggestionBox.defaultSuggestions()
+				#self.suggestionBox.defaultSuggestions()
+				self.suggestionBox.clearSuggestions()
 			else:
 				self.suggestionBox.clearSuggestions()
+				self.searchCommand(val)
 		
 		event.Skip()
+
+	def searchCommand(self, search):
+		results = unicode(self.dex.searchDocuments(search))
+		self.suggestionBox.addSuggestions(results)
+
+
 
 app = wx.App(False)
 mainWindow = Window(None, -1, "Atom Launcher")
 icon = TaskBarIcon()
 app.MainLoop()
-
-

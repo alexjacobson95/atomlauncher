@@ -1,4 +1,4 @@
-from whoosh.index import create_in 
+import whoosh.index as index
 from whoosh.fields import *
 from whoosh.qparser import QueryParser
 import os
@@ -13,27 +13,26 @@ class indexer():
 		if not os.path.isdir(indexFolder):
 			os.mkdir(indexFolder)
 
-		self.cleanIndex(indexFolder, INDEX_PATH)
+		if index.exists_in(indexFolder):
+			self.openOldIndex(indexFolder)
+			print 'laoded old index'
+		else:
+			self.cleanIndex(indexFolder, INDEX_PATH)
+			print 'loaded new index'
 
 	def getSchema(self):
 		return Schema(name=TEXT(stored=True), path=ID(unique=True, stored=True), time=STORED)
 
-	def cleanIndex(self, indexFolder, paths):
-		self.ix = create_in(indexFolder, schema=self.getSchema())
+	def openOldIndex(self, indexFolder):
+		self.ix = index.open_dir(indexFolder)
+		self.writer = self.ix.writer()
+
+	def openNewIndex(self, indexFolder, paths):
+		self.ix = index.create_in(indexFolder, self.getSchema())
 		self.writer = self.ix.writer()
 
 		self.addDocuments(paths)
 		self.writer.commit()
-
-	def searchDocuments(self):
-		with self.ix.searcher() as searcher:
-			query = QueryParser('name', self.ix.schema).parse(u'*notepad*')
-			results = searcher.search(query)
-			if len(results) > 0:
-				for result in results:
-					print result
-			else:
-				print "no results"
 
 	def addDocuments(self, paths):
 		paths = paths.split(';')
@@ -51,5 +50,13 @@ class indexer():
 
 							self.writer.add_document(name=unicode(fileName), path=unicode(targetPath), time=modTime)
 
-dex = indexer()
-dex.searchDocuments()
+	def searchDocuments(self, search):
+		print 'searching with: ' + search
+		with self.ix.searcher() as searcher:
+			query = QueryParser('name', self.ix.schema).parse(search)
+			results = searcher.search(query)
+			if len(results) > 0:
+				for result in results:
+					print result
+			else:
+				print "no results"
