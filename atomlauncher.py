@@ -82,7 +82,7 @@ class TaskBarIcon(wx.TaskBarIcon):
 
 	def CreatePopupMenu(self):
 		menu = wx.Menu()
-		create_menu_item(menu, 'Say Hello', self.onHello)
+		create_menu_item(menu, 'Hide Window', self.onHideWindow)
 		menu.AppendSeparator()
 		create_menu_item(menu, 'Exit', self.onExit)
 		return menu
@@ -90,7 +90,7 @@ class TaskBarIcon(wx.TaskBarIcon):
 	def onLeftDown(self, event):
 		toggleWindow()
 
-	def onHello(self, event):
+	def onHideWindow(self, event):
 		toggleWindow()
 
 	def onExit(self, event):
@@ -204,10 +204,13 @@ class Window(wx.Frame):
 			print("Return")
 
 		#elif code == wx.WXK_BACK:     
-		#	print("Backspace")
+			#print("Backspace")
 
 		#elif code == wx.WXK_DELETE:
-		#	print("Delete")
+			#print("Delete")
+
+		elif code == wx.WXK_SPACE:
+			print ("Space")
 
 		else:
 			val = self.commandBox.GetValue()
@@ -217,7 +220,7 @@ class Window(wx.Frame):
 				self.suggestionBox.clearSuggestions()
 			else:
 				self.suggestionBox.clearSuggestions()
-				self.searchCommand(val)
+				self.searchCommand('*' + val + '*')
 		
 		event.Skip()
 
