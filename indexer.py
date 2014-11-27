@@ -27,14 +27,16 @@ class indexer():
 		self.ix = index.open_dir(indexFolder)
 		self.writer = self.ix.writer()
 
+		#todo: check for updates in background (new thread)
+
 	def openNewIndex(self, indexFolder, paths):
 		self.ix = index.create_in(indexFolder, self.getSchema())
 		self.writer = self.ix.writer()
 
-		self.addDocuments(paths)
+		self.addShortcuts(paths)
 		self.writer.commit()
 
-	def addDocuments(self, paths):
+	def addShortcuts(self, paths):
 		paths = paths.split(';')
 		for path in paths:
 			for dirPath, dirNames, fileNames in os.walk(path):
