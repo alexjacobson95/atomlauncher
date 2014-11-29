@@ -7,6 +7,7 @@ import wx.html
 import win32con
 import settings as s
 import indexer
+from shutil import rmtree
 
 TRAY_TOOLTIP = 'Atom Launcher'
 TRAY_ICON = 'atom.png'
@@ -136,13 +137,16 @@ class Window(wx.Frame):
 	def registerHotKeys(self):
 		launchHotKey = self.convertHotKeySettings(settings['launchHotKey'])
 		quitHotKey = self.convertHotKeySettings(settings['quitHotKey'])
+		newIndexHotKey = self.convertHotKeySettings(settings['indexHotKey'])
 
-		hotKeyIDs = [ 100, 101 ]
+		hotKeyIDs = [ 100, 101, 102 ]
 		self.RegisterHotKey(hotKeyIDs[0], launchHotKey[0], launchHotKey[1])
 		self.RegisterHotKey(hotKeyIDs[1], quitHotKey[0], quitHotKey[1]) #81 should be q...I think?
+		self.RegisterHotKey(hotKeyIDs[2], newIndexHotKey[0], newIndexHotKey[1])
 
 		self.Bind(wx.EVT_HOTKEY, self.handleLaunchKey, id=hotKeyIDs[0])
 		self.Bind(wx.EVT_HOTKEY, self.handleQuitKey, id=hotKeyIDs[1])
+		self.Bind(wx.EVT_HOTKEY, self.handleIndexKey, id=hotKeyIDs[2])
 
 	def convertHotKeySettings(self, setting):
 		hotkey = setting.split('-')
@@ -179,6 +183,10 @@ class Window(wx.Frame):
 
 	def handleQuitKey(self, event):
 		quit()
+
+	def handleIndexKey(self, event):
+		shutil.rmtree('/indexDir')
+		print "deleted indexDir"
 
 	def handleLostFocus(self, event):
 		print 'handled'

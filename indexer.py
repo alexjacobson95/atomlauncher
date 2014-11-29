@@ -4,12 +4,20 @@ from whoosh.qparser import QueryParser
 import os
 from win32com.client import Dispatch
 
-INDEX_PATH = \
+SHORTCUT_PATH = \
 os.environ['appdata'] + "\\Microsoft\\Windows\\Start Menu\\Programs\\;" + \
 os.environ['programdata'] + "\\Microsoft\\Windows\\Start Menu\\Programs\\"
 
+FILES_PATH = \
+"C:\\Users\\" + os.environ['username'] + "\\Documents\\;" + \
+"C:\\Users\\" + os.environ['username'] + "\\Downloads\\;" + \
+"C:\\Users\\" + os.environ['username'] + "\\Music\\;" + \
+"C:\\Users\\" + os.environ['username'] + "\\Pictures\\;"
+
 class indexer():
 	def __init__(self, indexFolder='indexDir'):
+		paths = [SHORTCUT_PATH, FILES_PATH]
+
 		if not os.path.isdir(indexFolder):
 			os.mkdir(indexFolder)
 
@@ -17,7 +25,7 @@ class indexer():
 			self.openOldIndex(indexFolder)
 			print 'laoded old index'
 		else:
-			self.cleanIndex(indexFolder, INDEX_PATH)
+			self.openNewIndex(indexFolder, paths)
 			print 'loaded new index'
 
 	def getSchema(self):
@@ -33,7 +41,7 @@ class indexer():
 		self.ix = index.create_in(indexFolder, self.getSchema())
 		self.writer = self.ix.writer()
 
-		self.addShortcuts(paths)
+		self.addShortcuts(paths[0])
 		self.writer.commit()
 
 	def addShortcuts(self, paths):

@@ -6,6 +6,7 @@ trayToolTip AtomLauncher
 trayIcon atom.png
 launchHotKey alt-enter
 quitHotKey alt-Q
+indexHotKey alt-A
 """
 
 def readSettingsFile():
