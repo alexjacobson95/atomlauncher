@@ -28,6 +28,7 @@ class indexer():
 			self.openNewIndex(indexFolder, paths)
 			print 'loaded new index'
 
+			print "more stuff"
 	def getSchema(self):
 		return Schema(name=TEXT(stored=True), path=ID(unique=True, stored=True), time=STORED)
 
