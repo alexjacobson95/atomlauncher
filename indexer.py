@@ -28,7 +28,6 @@ class indexer():
 			self.openNewIndex(indexFolder, paths)
 			print 'loaded new index'
 
-			print "more stuff"
 	def getSchema(self):
 		return Schema(name=TEXT(stored=True), path=ID(unique=True, stored=True), time=STORED)
 
@@ -43,6 +42,7 @@ class indexer():
 		self.writer = self.ix.writer()
 
 		self.addShortcuts(paths[0])
+		self.addFiles(paths[1])
 		self.writer.commit()
 
 	def addShortcuts(self, paths):
@@ -60,6 +60,22 @@ class indexer():
 							modTime = os.path.getmtime(fullPath)
 
 							self.writer.add_document(name=unicode(fileName), path=unicode(targetPath), time=modTime)
+
+	def addFiles(self, paths):
+		paths = paths.split(';')
+		for path in paths:
+			for dirPath, dirNames, fileNames in os.walk(path):
+				for fileName in fileNames:
+					nameSplit = fileName.split('.')
+
+					fullPath = os.path.join(dirPath, fileName)
+					modTime = os.path.getmtime(fullPath)
+					
+					if nameSplit[-1] == 'exe':
+						self.writer.add_document(name=unicode(fileName), path=unicode(fullPath), time=modTime)
+					else:
+						self.writer.add_document(name=unicode(fileName), path=unicode(fullPath), time=modTime) #add content of file to search
+
 
 	def searchDocuments(self, search):
 		print 'searching with: ' + search
