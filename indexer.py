@@ -3,30 +3,46 @@ from whoosh.fields import *
 from whoosh.qparser import QueryParser
 import os
 from win32com.client import Dispatch
+from platform import win32_ver
 
-SHORTCUT_PATH = \
+SHORTCUT_PATH_WIN_8 = \
 os.environ['appdata'] + "\\Microsoft\\Windows\\Start Menu\\Programs\\;" + \
 os.environ['programdata'] + "\\Microsoft\\Windows\\Start Menu\\Programs\\"
+
+SHORTCUT_PATH_WIN_7 = \
+os.environ['programdata'] + "\\Microsoft\\Windows\\Start Menu\\"
 
 FILES_PATH = \
 "C:\\Users\\" + os.environ['username'] + "\\Documents\\;" + \
 "C:\\Users\\" + os.environ['username'] + "\\Downloads\\;" + \
 "C:\\Users\\" + os.environ['username'] + "\\Music\\;" + \
-"C:\\Users\\" + os.environ['username'] + "\\Pictures\\;"
+"C:\\Users\\" + os.environ['username'] + "\\Pictures\\"
 
 class indexer():
 	def __init__(self, indexFolder='indexDir'):
-		paths = [SHORTCUT_PATH, FILES_PATH]
+		paths = self.platformCheck()
+		print paths
 
 		if not os.path.isdir(indexFolder):
 			os.mkdir(indexFolder)
 
 		if index.exists_in(indexFolder):
 			self.openOldIndex(indexFolder)
-			print 'laoded old index'
+			print 'loaded old index'
+
 		else:
 			self.openNewIndex(indexFolder, paths)
 			print 'loaded new index'
+
+	def platformCheck(self):
+		if win32_ver()[0] == '7':
+			return [SHORTCUT_PATH_WIN_7, FILES_PATH]
+
+		elif win32_ver()[0] == '8':
+			return [SHORTCUT_PATH_WIN_8, FILES_PATH]
+
+		else:
+			return [SHORTCUT_PATH_WIN_8, FILES_PATH]
 
 	def getSchema(self):
 		return Schema(name=TEXT(stored=True), path=ID(unique=True, stored=True), time=STORED)
@@ -69,12 +85,22 @@ class indexer():
 					nameSplit = fileName.split('.')
 
 					fullPath = os.path.join(dirPath, fileName)
-					modTime = os.path.getmtime(fullPath)
+					try:
+						modTime = os.path.getmtime(fullPath)
+					except:
+						modTime = u'0'
+						print "exception thrown: " + fullPath
 					
 					if nameSplit[-1] == 'exe':
 						self.writer.add_document(name=unicode(fileName), path=unicode(fullPath), time=modTime)
 					else:
-						self.writer.add_document(name=unicode(fileName), path=unicode(fullPath), time=modTime) #add content of file to search
+						try:
+							self.writer.add_document(name=unicode(fileName), 
+							path=unicode(fullPath), 
+							time=modTime) #add content of file to search
+
+						except:
+							print "failed to add document: " + fileName
 
 
 	def searchDocuments(self, search):
